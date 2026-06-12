@@ -17,7 +17,7 @@ export const TOOLS = [
   },
   {
     name: 'get_aesthetic',
-    description: 'Get the full details for a specific aesthetic by name or slug, including the complete wiki page text in `raw_text`. Use when the user names an aesthetic directly. After receiving the result, summarize `raw_text` with a Haiku subagent to get a richer description than the pre-extracted `description` field.',
+    description: 'Get the full details for a specific aesthetic by name or slug, including the complete wiki page text in `raw_text`. Use when the user names an aesthetic directly. After receiving the result, pass `raw_text` to a Haiku subagent for detailed analysis — the pre-extracted `description` field is only the first paragraph and should be ignored.',
     inputSchema: {
       type: 'object',
       properties: {

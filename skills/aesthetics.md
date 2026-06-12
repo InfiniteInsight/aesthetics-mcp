@@ -33,15 +33,41 @@ named aesthetic traditions rather than generic descriptions.
   (name + one-line description) and ask which resonates before generating output.
 
 **After a successful `get_aesthetic` call:** the response includes `raw_text` — the
-complete wiki page text. Use a Haiku subagent to summarize it:
+complete wiki page text. Use a Haiku subagent to produce a thorough analysis:
 
-> Prompt: "Summarize this Aesthetics Wiki page for [aesthetic name] in 3–5 sentences.
-> Cover: what it is, its dominant mood, visual hallmarks, and cultural origins.
-> Be specific — name actual colors, motifs, and reference media where present.
+> Prompt: "You are analyzing an Aesthetics Wiki page for [aesthetic name]. Produce a
+> detailed analysis covering every dimension the page discusses. Do not summarize
+> briefly — extract everything useful. Cover:
+>
+> 1. **Definition and origins** — what this aesthetic is, where and when it emerged,
+>    its cultural and historical roots, any predecessor or origin movements.
+> 2. **Mood and emotional register** — the feeling it evokes, psychological associations,
+>    what kind of person or subculture it appeals to.
+> 3. **Visual hallmarks** — specific colors (name them), color relationships, typical
+>    palettes; typography styles; recurring motifs, symbols, and imagery; textures and
+>    surfaces; compositional tendencies (chaotic vs. minimal, dense vs. sparse, etc.).
+> 4. **Fashion and physical expression** — clothing, accessories, hair, makeup if the
+>    page covers them.
+> 5. **Interior and environmental expression** — how spaces decorated in this aesthetic
+>    look and feel, furniture, lighting, objects.
+> 6. **Digital and media expression** — graphic design conventions, UI patterns, social
+>    media presentation styles, photography tendencies.
+> 7. **Key media and cultural references** — specific albums, films, TV shows, artists,
+>    brands, websites, or subcultures the page names as canonical examples.
+> 8. **Related and adjacent aesthetics** — what it overlaps with, how it differs from
+>    similar aesthetics, which aesthetics it evolved from or influenced.
+> 9. **Things that break the aesthetic** — anachronisms, wrong colors, wrong textures,
+>    common mistakes.
+>
+> Write in flowing prose by section. Skip any section the page has nothing to say about.
+> Be specific throughout — generic statements like 'earthy tones' are less useful than
+> 'terracotta, sage green, and warm cream'. Quote or closely paraphrase distinctive
+> phrases from the page when they capture the aesthetic well.
+>
 > Page text: [raw_text]"
 
-Use the Haiku summary as your working description. The pre-extracted `description`
-field is only the first paragraph and is often incomplete.
+Use this analysis as your working knowledge of the aesthetic for all output generation.
+The pre-extracted `description` field is only the first paragraph and should be ignored.
 
 ## Step 3: Ask for output format (or infer from context)
 
