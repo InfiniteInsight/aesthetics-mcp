@@ -53,7 +53,7 @@ export const TOOLS = [
           description: 'Project description or desired vibe, e.g. "a meditation app for millennials, calm but not clinical"',
         },
         limit: {
-          type: 'number',
+          type: 'integer',
           description: 'Maximum number of results (default: 3)',
         },
       },
