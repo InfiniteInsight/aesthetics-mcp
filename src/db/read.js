@@ -12,6 +12,7 @@ function parseArrayFields(row) {
 export function searchAesthetics(db, query, limit = 10) {
   // Strip FTS5 syntax chars to prevent query parse errors
   const safeQuery = query.replace(/["\-*()^]/g, ' ').trim();
+  if (!safeQuery) return [];
   const rows = db.prepare(`
     SELECT a.name, a.slug, a.mood_tags, a.colors, a.description, a.completeness
     FROM aesthetics_fts f
