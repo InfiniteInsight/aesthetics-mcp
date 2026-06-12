@@ -23,7 +23,7 @@ named aesthetic traditions rather than generic descriptions.
 | Describes their project ("meditation app, calm but not clinical") | `suggest_aesthetics("<description>")` |
 | Wants to explore options ("what aesthetics exist for nature?") | `list_aesthetics("nature")` |
 
-## Step 2: Validate the match
+## Step 2: Validate the match and summarize the page
 
 - If `get_aesthetic` returns `null`, the name may be misspelled or use a different
   casing — try `search_aesthetics` with the name as the query.
@@ -31,6 +31,17 @@ named aesthetic traditions rather than generic descriptions.
   the database — I'll supplement with my own knowledge where needed."
 - If `search_aesthetics` returns multiple plausible matches, present them briefly
   (name + one-line description) and ask which resonates before generating output.
+
+**After a successful `get_aesthetic` call:** the response includes `raw_text` — the
+complete wiki page text. Use a Haiku subagent to summarize it:
+
+> Prompt: "Summarize this Aesthetics Wiki page for [aesthetic name] in 3–5 sentences.
+> Cover: what it is, its dominant mood, visual hallmarks, and cultural origins.
+> Be specific — name actual colors, motifs, and reference media where present.
+> Page text: [raw_text]"
+
+Use the Haiku summary as your working description. The pre-extracted `description`
+field is only the first paragraph and is often incomplete.
 
 ## Step 3: Ask for output format (or infer from context)
 
