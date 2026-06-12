@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { initDb } from '../src/db/schema.js';
 import { upsertAesthetic, scoreCompleteness } from '../src/db/write.js';
+import { searchAesthetics, getAesthetic, listAesthetics, suggestAesthetics } from '../src/db/read.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { rmSync } from 'fs';
@@ -116,5 +117,83 @@ describe('write', () => {
       textures: JSON.stringify([]),
       motifs: JSON.stringify([]),
     })).toBe('stub');
+  });
+});
+
+const COTTAGECORE = {
+  name: 'Cottagecore',
+  slug: 'cottagecore',
+  aliases: [],
+  categories: ['nature', 'fashion'],
+  related: ['fairycore'],
+  description: 'A nature and handcraft aesthetic.',
+  mood_tags: ['cozy', 'whimsical'],
+  era: '2010s',
+  colors: ['#8DB87A'],
+  color_names: ['sage green'],
+  typography: ['handwritten'],
+  textures: ['linen'],
+  motifs: ['wildflowers'],
+  key_media: [],
+  platforms: ['TikTok'],
+  wiki_url: 'https://aesthetics.fandom.com/wiki/Cottagecore',
+  scraped_at: '2026-06-11T00:00:00Z',
+  raw_text: 'Cottagecore cozy nature handcraft whimsical wildflowers linen.',
+};
+
+describe('read', () => {
+  let db;
+  beforeEach(() => {
+    db = initDb(':memory:');
+    upsertAesthetic(db, SAMPLE);
+    upsertAesthetic(db, COTTAGECORE);
+  });
+
+  test('searchAesthetics returns results matching query', () => {
+    const results = searchAesthetics(db, 'dreamy nostalgic');
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].name).toBe('Vaporwave');
+  });
+
+  test('searchAesthetics returns lightweight objects (no raw_text)', () => {
+    const results = searchAesthetics(db, 'dreamy');
+    expect(results[0]).not.toHaveProperty('raw_text');
+    expect(results[0]).toHaveProperty('mood_tags');
+    expect(results[0]).toHaveProperty('colors');
+  });
+
+  test('getAesthetic returns full entry by exact name', () => {
+    const result = getAesthetic(db, 'Vaporwave');
+    expect(result.slug).toBe('vaporwave');
+    expect(result.colors).toEqual(['#FF71CE', '#01CDFE']);
+  });
+
+  test('getAesthetic returns full entry by slug', () => {
+    const result = getAesthetic(db, 'vaporwave');
+    expect(result.name).toBe('Vaporwave');
+  });
+
+  test('getAesthetic returns null for unknown name', () => {
+    expect(getAesthetic(db, 'NonExistentAesthetic')).toBeNull();
+  });
+
+  test('listAesthetics returns all aesthetics', () => {
+    const results = listAesthetics(db);
+    expect(results.length).toBe(2);
+    expect(results[0]).toHaveProperty('name');
+    expect(results[0]).toHaveProperty('categories');
+    expect(results[0]).not.toHaveProperty('raw_text');
+  });
+
+  test('listAesthetics filters by category substring', () => {
+    const results = listAesthetics(db, 'nature');
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe('Cottagecore');
+  });
+
+  test('suggestAesthetics returns top N results', () => {
+    const results = suggestAesthetics(db, 'cozy nature wildflowers', 1);
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe('Cottagecore');
   });
 });
