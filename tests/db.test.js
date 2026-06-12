@@ -1,5 +1,6 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
 import { initDb } from '../src/db/schema.js';
+import { upsertAesthetic, scoreCompleteness } from '../src/db/write.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { rmSync } from 'fs';
@@ -46,5 +47,74 @@ describe('schema', () => {
     db.prepare(`DELETE FROM aesthetics WHERE slug = 'vaporwave'`).run();
     rows = db.prepare(`SELECT name FROM aesthetics_fts WHERE aesthetics_fts MATCH 'cozy'`).all();
     expect(rows.length).toBe(0);
+  });
+});
+
+const SAMPLE = {
+  name: 'Vaporwave',
+  slug: 'vaporwave',
+  aliases: ['aesthetic wave'],
+  categories: ['music', 'internet culture'],
+  related: ['synthwave'],
+  description: 'A retro-futurist aesthetic.',
+  mood_tags: ['nostalgic', 'dreamy'],
+  era: '1980s imagined future',
+  colors: ['#FF71CE', '#01CDFE'],
+  color_names: ['hot pink', 'cyan'],
+  typography: ['serif', 'glitch'],
+  textures: ['gradients'],
+  motifs: ['Greek statues'],
+  key_media: ['Floral Shoppe'],
+  platforms: ['Tumblr'],
+  wiki_url: 'https://aesthetics.fandom.com/wiki/Vaporwave',
+  scraped_at: '2026-06-11T00:00:00Z',
+  raw_text: 'Vaporwave is a microgenre nostalgic dreamy retro.',
+};
+
+describe('write', () => {
+  let db;
+  beforeEach(() => { db = initDb(':memory:'); });
+
+  test('upsertAesthetic inserts a new aesthetic', () => {
+    upsertAesthetic(db, SAMPLE);
+    const row = db.prepare('SELECT * FROM aesthetics WHERE slug = ?').get('vaporwave');
+    expect(row.name).toBe('Vaporwave');
+  });
+
+  test('upsertAesthetic updates existing aesthetic on re-insert', () => {
+    upsertAesthetic(db, SAMPLE);
+    upsertAesthetic(db, { ...SAMPLE, description: 'Updated.' });
+    const row = db.prepare('SELECT * FROM aesthetics WHERE slug = ?').get('vaporwave');
+    expect(row.description).toBe('Updated.');
+  });
+
+  test('scoreCompleteness returns "full" when description + 3 visual fields populated', () => {
+    expect(scoreCompleteness({
+      description: 'A description.',
+      colors: JSON.stringify(['#FF71CE']),
+      typography: JSON.stringify(['serif']),
+      textures: JSON.stringify(['gradients']),
+      motifs: JSON.stringify(['statues']),
+    })).toBe('full');
+  });
+
+  test('scoreCompleteness returns "partial" when description but fewer than 3 visual fields', () => {
+    expect(scoreCompleteness({
+      description: 'A description.',
+      colors: JSON.stringify(['#FF71CE']),
+      typography: JSON.stringify([]),
+      textures: JSON.stringify([]),
+      motifs: JSON.stringify([]),
+    })).toBe('partial');
+  });
+
+  test('scoreCompleteness returns "stub" when no description', () => {
+    expect(scoreCompleteness({
+      description: '',
+      colors: JSON.stringify([]),
+      typography: JSON.stringify([]),
+      textures: JSON.stringify([]),
+      motifs: JSON.stringify([]),
+    })).toBe('stub');
   });
 });
