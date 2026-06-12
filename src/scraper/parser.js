@@ -68,7 +68,7 @@ export function parseAestheticPage(html, wikiUrl) {
     slug,
     aliases: [],
     categories: [...new Set(categories)],
-    related: [...new Set(related.slice(0, 10))],
+    related: [...new Set(related)].slice(0, 10),
     description,
     mood_tags: [],
     era: '',
