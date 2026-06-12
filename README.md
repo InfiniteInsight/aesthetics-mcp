@@ -47,8 +47,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 
 ## Install the companion skill
 
-Copy `skills/aesthetics.md` to your superpowers skills directory. Then use `/aesthetics`
-or just describe what you want — the skill auto-triggers on aesthetic requests.
+```bash
+mkdir -p ~/.claude/skills/aesthetics
+cp skills/aesthetics.md ~/.claude/skills/aesthetics/SKILL.md
+```
+
+Then use `/aesthetics` or just describe what you want — the skill auto-triggers on aesthetic requests.
 
 ## Refresh the database
 

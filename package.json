@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "files": ["src/", "data/", "skills/"],
+  "files": ["src/", "data/.gitkeep", "skills/"],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "better-sqlite3": "^9.0.0",
