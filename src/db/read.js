@@ -11,7 +11,7 @@ function parseArrayFields(row) {
 
 export function searchAesthetics(db, query, limit = 10) {
   // Strip FTS5 syntax chars to prevent query parse errors
-  const safeQuery = query.replace(/["\-*()^]/g, ' ').trim();
+  const safeQuery = query.replace(/["\-*()^,]/g, ' ').trim();
   if (!safeQuery) return [];
   const rows = db.prepare(`
     SELECT a.name, a.slug, a.mood_tags, a.colors, a.description, a.completeness
@@ -58,5 +58,7 @@ export function listAesthetics(db, category) {
 }
 
 export function suggestAesthetics(db, description, limit = 3) {
-  return searchAesthetics(db, description, limit);
+  // Natural language input: OR across all terms so partial matches rank rather than requiring every word
+  const terms = description.replace(/["\-*()^,]/g, ' ').trim().split(/\s+/).filter(Boolean);
+  return searchAesthetics(db, terms.join(' OR '), limit);
 }
