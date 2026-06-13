@@ -10,11 +10,9 @@ Gives Claude queryable knowledge of named internet aesthetics (Vaporwave, Cottag
 npm install -g aesthetics-mcp
 ```
 
-Then populate the database (takes ~10 minutes, makes ~300 HTTP requests):
+The database (~11MB, 1100+ aesthetics) is bundled — no scraping needed to get started.
 
-```bash
-aesthetics-scrape full
-```
+## Refresh the database
 
 ## Configure Claude Code
 
@@ -54,7 +52,7 @@ cp skills/aesthetics.md ~/.claude/skills/aesthetics/SKILL.md
 
 Then use `/aesthetics` or just describe what you want — the skill auto-triggers on aesthetic requests.
 
-## Refresh the database
+## Update the database
 
 ```bash
 # Re-scrape pages older than 30 days
@@ -76,3 +74,7 @@ AESTHETICS_DB_PATH=/path/to/aesthetics.db aesthetics-mcp
 | `get_aesthetic(name)` | Full details for a named aesthetic |
 | `list_aesthetics(category?)` | Browse all aesthetics, optionally filtered |
 | `suggest_aesthetics(description, limit?)` | Top matches for a project description |
+
+## Content license
+
+Aesthetic data is sourced from the [Aesthetics Wiki](https://aesthetics.fandom.com) and licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). This package redistributes that content in database form under the same license.
