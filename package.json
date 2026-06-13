@@ -1,7 +1,15 @@
 {
   "name": "aesthetics-mcp",
   "version": "1.0.0",
-  "description": "MCP server for 300+ visual aesthetics from the Aesthetics Wiki",
+  "description": "MCP server for 1100+ visual aesthetics from the Aesthetics Wiki",
+  "homepage": "https://github.com/InfiniteInsight/aesthetics-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/InfiniteInsight/aesthetics-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/InfiniteInsight/aesthetics-mcp/issues"
+  },
   "type": "module",
   "bin": {
     "aesthetics-scrape": "./src/scraper/cli.js",
