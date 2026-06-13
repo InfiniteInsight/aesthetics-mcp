@@ -1,5 +1,4 @@
 const LIST_URL = 'https://aesthetics.fandom.com/wiki/Aesthetics_Wiki';
-const DELAY_MS = 1500;
 const USER_AGENT = 'aesthetics-mcp/1.0 (personal research; https://github.com/user/aesthetics-mcp)';
 
 async function fetchPage(url) {
@@ -16,7 +15,8 @@ export async function fetchAestheticLinks() {
   return fetchPage(LIST_URL);
 }
 
-export async function fetchAestheticPage(url) {
-  await sleep(DELAY_MS);
+export async function fetchAestheticPage(url, minDelay = 1000, maxDelay = 3000) {
+  const delay = Math.floor(minDelay + Math.random() * (maxDelay - minDelay));
+  await sleep(delay);
   return fetchPage(url);
 }
