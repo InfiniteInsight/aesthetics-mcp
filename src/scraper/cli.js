@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import { initDb } from '../db/schema.js';
 import { upsertAesthetic } from '../db/write.js';
 import { fetchAestheticLinks, fetchAestheticPage } from './crawler.js';
-import { parseListPage, parseAestheticPage } from './parser.js';
+import { parseAestheticPage } from './parser.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DB = resolve(__dirname, '../../data/aesthetics.db');
@@ -34,9 +34,8 @@ program
   .action(async (opts) => {
     const { minDelay, maxDelay } = parseDelay(opts.delay);
     const db = initDb(opts.db);
-    console.log('Fetching master list...');
-    const listHtml = await fetchAestheticLinks();
-    const links = parseListPage(listHtml);
+    console.log('Fetching aesthetic list...');
+    const links = await fetchAestheticLinks();
     const delayDesc = minDelay === maxDelay ? `${minDelay}ms` : `${minDelay}–${maxDelay}ms`;
     console.log(`Found ${links.length} aesthetics. Starting scrape (${delayDesc} delay per page)...`);
     let success = 0;
