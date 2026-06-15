@@ -20,6 +20,23 @@ export function parseListPage(html) {
   return links;
 }
 
+// Read a Fandom Portable Infobox field by its data-source attribute.
+function piField($, ...dataSources) {
+  for (const src of dataSources) {
+    const val = $(`[data-source="${src}"] .pi-data-value`).text().trim();
+    if (val) return val;
+  }
+  return '';
+}
+
+function splitCsv(text) {
+  return text ? text.split(',').map(s => s.trim()).filter(Boolean) : [];
+}
+
+function rgbaToHex(r, g, b) {
+  return '#' + [r, g, b].map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+}
+
 export function parseAestheticPage(html, wikiUrl) {
   const $ = cheerio.load(html);
 
@@ -52,12 +69,21 @@ export function parseAestheticPage(html, wikiUrl) {
     related.push(text);
   });
 
+  // Extract colors from inline styles. Skip <th> elements — those are category
+  // navigation table headers (wiki chrome), not aesthetic color swatches.
   const colors = [];
   $('[style*="background-color"]').each((_, el) => {
+    if (el.tagName === 'th') return;
     const style = $(el).attr('style') || '';
-    const hexMatch = style.match(/background-color:\s*(#[0-9a-fA-F]{6})/i);
+    const hexMatch = style.match(/background-color:\s*(#[0-9a-fA-F]{6})\b/i);
     if (hexMatch && !colors.includes(hexMatch[1])) {
       colors.push(hexMatch[1]);
+    }
+    // Convert rgba(r,g,b,...) to hex (wiki pages often use rgba for color swatches)
+    const rgbaMatch = style.match(/background-color:\s*rgba\(\s*(\d+),\s*(\d+),\s*(\d+)/i);
+    if (rgbaMatch) {
+      const hex = rgbaToHex(rgbaMatch[1], rgbaMatch[2], rgbaMatch[3]);
+      if (!colors.includes(hex)) colors.push(hex);
     }
   });
 
@@ -66,19 +92,19 @@ export function parseAestheticPage(html, wikiUrl) {
   return {
     name,
     slug,
-    aliases: [],
+    aliases: splitCsv(piField($, 'other_names')),
     categories: [...new Set(categories)],
     related: [...new Set(related)].slice(0, 10),
     description,
-    mood_tags: [],
-    era: '',
+    mood_tags: splitCsv(piField($, 'key_values')),
+    era: piField($, 'decade_of_origin'),
     colors,
-    color_names: [],
+    color_names: splitCsv(piField($, 'key_colours', 'key_colors')),
     typography: [],
     textures: [],
-    motifs: [],
+    motifs: splitCsv(piField($, 'key_motifs')),
     key_media: [],
-    platforms: [],
+    platforms: splitCsv(piField($, 'primary_platform')),
     wiki_url: wikiUrl,
     scraped_at: new Date().toISOString(),
     raw_text: rawText,

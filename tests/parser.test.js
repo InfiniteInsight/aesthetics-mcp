@@ -38,6 +38,46 @@ describe('parseAestheticPage', () => {
     expect(result.colors).toContain('#B967FF');
   });
 
+  test('excludes colors from <th> elements (wiki category nav chrome)', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.colors).not.toContain('#c232c0');
+  });
+
+  test('extracts color_names from pi-data key_colours', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.color_names).toContain('Pastel pink and cyan');
+    expect(result.color_names).toContain('purple');
+    expect(result.color_names).toContain('neon gradients');
+  });
+
+  test('extracts motifs from pi-data key_motifs', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.motifs).toContain('Hellenic statues');
+    expect(result.motifs).toContain('palm trees');
+  });
+
+  test('extracts mood_tags from pi-data key_values', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.mood_tags).toContain('Nostalgia');
+    expect(result.mood_tags).toContain('irony');
+  });
+
+  test('extracts era from pi-data decade_of_origin', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.era).toBe('Early 2010s');
+  });
+
+  test('extracts platforms from pi-data primary_platform', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.platforms).toContain('Tumblr');
+    expect(result.platforms).toContain('SoundCloud');
+  });
+
+  test('extracts aliases from pi-data other_names', () => {
+    const result = parseAestheticPage(aestheticHtml, WIKI_URL);
+    expect(result.aliases).toContain('Vapor');
+  });
+
   test('extracts related aesthetics from internal wiki links', () => {
     const result = parseAestheticPage(aestheticHtml, WIKI_URL);
     expect(result.related).toContain('Synthwave');
