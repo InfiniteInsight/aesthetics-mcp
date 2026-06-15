@@ -25,8 +25,8 @@ const SAMPLE = {
 };
 
 describe('TOOLS', () => {
-  test('exports exactly four tools', () => {
-    expect(TOOLS.length).toBe(4);
+  test('exports exactly nine tools', () => {
+    expect(TOOLS.length).toBe(9);
   });
 
   test('each tool has name, description, and inputSchema', () => {
@@ -40,9 +40,14 @@ describe('TOOLS', () => {
   test('tool names match expected set', () => {
     const names = TOOLS.map(t => t.name).sort();
     expect(names).toEqual([
+      'check_db_staleness',
+      'find_related',
       'get_aesthetic',
       'list_aesthetics',
+      'list_categories',
+      'random_aesthetic',
       'search_aesthetics',
+      'search_by_color',
       'suggest_aesthetics',
     ]);
   });
@@ -55,39 +60,72 @@ describe('handleToolCall', () => {
     upsertAesthetic(db, SAMPLE);
   });
 
-  test('search_aesthetics returns matching results', () => {
-    const result = handleToolCall(db, 'search_aesthetics', { query: 'nostalgic' });
+  test('search_aesthetics returns matching results', async () => {
+    const result = await handleToolCall(db, 'search_aesthetics', { query: 'nostalgic' });
     expect(Array.isArray(result)).toBe(true);
     expect(result[0].name).toBe('Vaporwave');
   });
 
-  test('get_aesthetic returns full entry', () => {
-    const result = handleToolCall(db, 'get_aesthetic', { name: 'Vaporwave' });
+  test('get_aesthetic returns full entry', async () => {
+    const result = await handleToolCall(db, 'get_aesthetic', { name: 'Vaporwave' });
     expect(result.slug).toBe('vaporwave');
     expect(result.colors).toEqual(['#FF71CE']);
   });
 
-  test('get_aesthetic returns null for unknown name', () => {
-    const result = handleToolCall(db, 'get_aesthetic', { name: 'DoesNotExist' });
+  test('get_aesthetic returns null for unknown name', async () => {
+    const result = await handleToolCall(db, 'get_aesthetic', { name: 'DoesNotExist' });
     expect(result).toBeNull();
   });
 
-  test('list_aesthetics returns all aesthetics', () => {
-    const result = handleToolCall(db, 'list_aesthetics', {});
+  test('list_aesthetics returns all aesthetics', async () => {
+    const result = await handleToolCall(db, 'list_aesthetics', {});
     expect(result.length).toBe(1);
   });
 
-  test('list_aesthetics accepts optional category', () => {
-    const result = handleToolCall(db, 'list_aesthetics', { category: 'music' });
+  test('list_aesthetics accepts optional category', async () => {
+    const result = await handleToolCall(db, 'list_aesthetics', { category: 'music' });
     expect(result.length).toBe(1);
   });
 
-  test('suggest_aesthetics defaults to limit 3', () => {
-    const result = handleToolCall(db, 'suggest_aesthetics', { description: 'retro electronic' });
+  test('suggest_aesthetics defaults to limit 3', async () => {
+    const result = await handleToolCall(db, 'suggest_aesthetics', { description: 'retro electronic' });
     expect(Array.isArray(result)).toBe(true);
   });
 
-  test('unknown tool throws an error', () => {
-    expect(() => handleToolCall(db, 'nonexistent_tool', {})).toThrow('Unknown tool: nonexistent_tool');
+  test('random_aesthetic returns an aesthetic', async () => {
+    const result = await handleToolCall(db, 'random_aesthetic', {});
+    expect(result).not.toBeNull();
+    expect(result).toHaveProperty('name');
+    expect(result).toHaveProperty('slug');
+  });
+
+  test('search_by_color finds by color name', async () => {
+    const result = await handleToolCall(db, 'search_by_color', { color: 'pink' });
+    expect(Array.isArray(result)).toBe(true);
+    expect(result[0].name).toBe('Vaporwave');
+  });
+
+  test('list_categories returns array containing inserted categories', async () => {
+    const result = await handleToolCall(db, 'list_categories', {});
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toContain('music');
+  });
+
+  test('find_related returns root and related array', async () => {
+    const result = await handleToolCall(db, 'find_related', { name: 'Vaporwave' });
+    expect(result).not.toBeNull();
+    expect(result.root.name).toBe('Vaporwave');
+    expect(Array.isArray(result.related)).toBe(true);
+  });
+
+  test('check_db_staleness returns staleness info', async () => {
+    const result = await handleToolCall(db, 'check_db_staleness', {});
+    expect(result).toHaveProperty('total');
+    expect(result).toHaveProperty('is_stale');
+    expect(result.total).toBe(1);
+  });
+
+  test('unknown tool rejects with an error', async () => {
+    await expect(handleToolCall(db, 'nonexistent_tool', {})).rejects.toThrow('Unknown tool: nonexistent_tool');
   });
 });

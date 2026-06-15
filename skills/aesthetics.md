@@ -10,7 +10,7 @@ description: >
 
 # Aesthetics Skill
 
-You have access to an MCP server (`aesthetics-mcp`) with a database of 300+ named
+You have access to an MCP server (`aesthetics-mcp`) with a database of 1135+ named
 visual aesthetics from the Aesthetics Wiki. Use it to ground design work in real,
 named aesthetic traditions rather than generic descriptions.
 
@@ -22,11 +22,17 @@ named aesthetic traditions rather than generic descriptions.
 | Describes a vibe ("dark moody academic candlelight") | `search_aesthetics("dark moody academic candlelight")` |
 | Describes their project ("meditation app, calm but not clinical") | `suggest_aesthetics("<description>")` |
 | Wants to explore options ("what aesthetics exist for nature?") | `list_aesthetics("nature")` |
+| Wants inspiration or a random pick | `random_aesthetic()` or `random_aesthetic(category)` |
+| Asks what categories exist | `list_categories()` then `list_aesthetics(category)` |
+| Wants aesthetics with specific colors ("black and gold palette") | `search_by_color("black and gold")` |
+| Wants to explore adjacent aesthetics ("what's related to Dark Academia?") | `find_related("Dark Academia")` |
+| Asks if the data is current | `check_db_staleness()` |
 
 ## Step 2: Validate the match and summarize the page
 
-- If `get_aesthetic` returns `null`, the name may be misspelled or use a different
-  casing — try `search_aesthetics` with the name as the query.
+- `get_aesthetic` automatically falls back to fuzzy search when an exact name isn't
+  found. If the result includes `_fuzzy_match: true`, confirm with the user before
+  proceeding: "I couldn't find [requested name] exactly — did you mean [result.name]?"
 - If `completeness` is `"stub"`, tell the user: "This aesthetic has limited data in
   the database — I'll supplement with my own knowledge where needed."
 - If `search_aesthetics` returns multiple plausible matches, present them briefly
@@ -153,8 +159,8 @@ Cottagecore, "distressed textures" for Dark Academia).
 
 ## Notes
 
-- `aesthetic.related` lists adjacent aesthetics — mention them if the user wants to
-  blend or explore variations.
+- `aesthetic.related` lists adjacent aesthetics — use `find_related` to fetch their
+  full data when blending influences or exploring variations.
 - When `completeness` is `"partial"`, supplement sparse fields with your own
   knowledge of the aesthetic. Be transparent about which details are inferred.
 - Color names in `aesthetic.color_names` add meaning to the palette — use them in

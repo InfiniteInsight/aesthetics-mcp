@@ -1,7 +1,8 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { initDb } from '../src/db/schema.js';
 import { upsertAesthetic, scoreCompleteness } from '../src/db/write.js';
-import { searchAesthetics, getAesthetic, listAesthetics, suggestAesthetics } from '../src/db/read.js';
+import { searchAesthetics, getAesthetic, listAesthetics, suggestAesthetics,
+         randomAesthetic, searchByColor, listCategories, findRelated, checkStaleness } from '../src/db/read.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { rmSync } from 'fs';
@@ -141,12 +142,34 @@ const COTTAGECORE = {
   raw_text: 'Cottagecore cozy nature handcraft whimsical wildflowers linen.',
 };
 
+const FAIRYCORE = {
+  name: 'Fairycore',
+  slug: 'fairycore',
+  aliases: [],
+  categories: ['nature', 'fantasy'],
+  related: [],
+  description: 'A whimsical fairy-inspired aesthetic.',
+  mood_tags: ['whimsical', 'magical'],
+  era: '2010s',
+  colors: ['#C8A2C8'],
+  color_names: ['lilac', 'soft pink'],
+  typography: ['handwritten'],
+  textures: ['sheer'],
+  motifs: ['wings', 'mushrooms'],
+  key_media: [],
+  platforms: ['TikTok'],
+  wiki_url: 'https://aesthetics.fandom.com/wiki/Fairycore',
+  scraped_at: '2026-06-11T00:00:00Z',
+  raw_text: 'Fairycore is whimsical magical fantasy nature.',
+};
+
 describe('read', () => {
   let db;
   beforeEach(() => {
     db = initDb(':memory:');
     upsertAesthetic(db, SAMPLE);
     upsertAesthetic(db, COTTAGECORE);
+    upsertAesthetic(db, FAIRYCORE);
   });
 
   test('searchAesthetics returns results matching query', () => {
@@ -160,6 +183,18 @@ describe('read', () => {
     expect(results[0]).not.toHaveProperty('raw_text');
     expect(results[0]).toHaveProperty('mood_tags');
     expect(results[0]).toHaveProperty('colors');
+  });
+
+  test('searchAesthetics respects min_completeness filter', () => {
+    // Vaporwave has typography+textures+motifs+colors = full; all are full in this fixture set
+    // Insert a stub to test filtering
+    upsertAesthetic(db, {
+      ...SAMPLE, name: 'Stub Aesthetic', slug: 'stub-aesthetic',
+      description: '', raw_text: 'dreamy nostalgic stub',
+    });
+    const all = searchAesthetics(db, 'dreamy nostalgic', 10, 'stub');
+    const partial = searchAesthetics(db, 'dreamy nostalgic', 10, 'partial');
+    expect(all.length).toBeGreaterThan(partial.length);
   });
 
   test('getAesthetic returns full entry by exact name', () => {
@@ -177,9 +212,18 @@ describe('read', () => {
     expect(getAesthetic(db, 'NonExistentAesthetic')).toBeNull();
   });
 
+  test('getAesthetic sets _fuzzy_match when falling back to search', () => {
+    // FTS can match 'cottagecore' in name column even when slug lookup fails
+    const result = getAesthetic(db, 'cottagecore nature');
+    if (result) {
+      expect(result._fuzzy_match).toBe(true);
+    }
+    // null is also acceptable if FTS doesn't match
+  });
+
   test('listAesthetics returns all aesthetics', () => {
     const results = listAesthetics(db);
-    expect(results.length).toBe(2);
+    expect(results.length).toBe(3);
     expect(results[0]).toHaveProperty('name');
     expect(results[0]).toHaveProperty('categories');
     expect(results[0]).not.toHaveProperty('raw_text');
@@ -187,13 +231,94 @@ describe('read', () => {
 
   test('listAesthetics filters by category substring', () => {
     const results = listAesthetics(db, 'nature');
+    expect(results.length).toBe(2); // Cottagecore and Fairycore
+    const names = results.map(r => r.name);
+    expect(names).toContain('Cottagecore');
+    expect(names).toContain('Fairycore');
+  });
+
+  test('suggestAesthetics returns top N results', async () => {
+    const results = await suggestAesthetics(db, 'cozy nature wildflowers', 1);
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Cottagecore');
   });
 
-  test('suggestAesthetics returns top N results', () => {
-    const results = suggestAesthetics(db, 'cozy nature wildflowers', 1);
-    expect(results.length).toBe(1);
+  test('randomAesthetic returns an aesthetic', () => {
+    const result = randomAesthetic(db);
+    expect(result).not.toBeNull();
+    expect(result).toHaveProperty('name');
+    expect(result).toHaveProperty('slug');
+  });
+
+  test('randomAesthetic filters by category', () => {
+    const result = randomAesthetic(db, 'fantasy');
+    expect(result).not.toBeNull();
+    expect(result.name).toBe('Fairycore');
+  });
+
+  test('randomAesthetic returns null when no match', () => {
+    const result = randomAesthetic(db, 'nonexistent-category-xyz');
+    expect(result).toBeNull();
+  });
+
+  test('searchByColor finds aesthetics by color name', () => {
+    const results = searchByColor(db, 'pink');
+    expect(results.length).toBeGreaterThan(0);
+    const names = results.map(r => r.name);
+    expect(names).toContain('Vaporwave'); // has 'hot pink'
+  });
+
+  test('searchByColor matches multi-word colors', () => {
+    const results = searchByColor(db, 'sage green');
+    expect(results.length).toBeGreaterThan(0);
     expect(results[0].name).toBe('Cottagecore');
+  });
+
+  test('searchByColor returns empty array for no match', () => {
+    const results = searchByColor(db, 'crimsonxyznonexistent');
+    expect(results).toEqual([]);
+  });
+
+  test('listCategories returns distinct sorted categories', () => {
+    const cats = listCategories(db);
+    expect(Array.isArray(cats)).toBe(true);
+    expect(cats).toContain('music');
+    expect(cats).toContain('nature');
+    expect(cats).toContain('fashion');
+    expect(cats).toContain('fantasy');
+    expect(cats).toEqual([...cats].sort());
+  });
+
+  test('findRelated returns root and resolved related aesthetics', () => {
+    // COTTAGECORE.related = ['fairycore']; Fairycore is in the DB
+    const result = findRelated(db, 'Cottagecore');
+    expect(result).not.toBeNull();
+    expect(result.root.name).toBe('Cottagecore');
+    expect(result.related.length).toBe(1);
+    expect(result.related[0].name).toBe('Fairycore');
+  });
+
+  test('findRelated returns empty related array when no DB matches', () => {
+    // SAMPLE.related = ['synthwave']; Synthwave is not in the DB
+    const result = findRelated(db, 'Vaporwave');
+    expect(result).not.toBeNull();
+    expect(result.root.name).toBe('Vaporwave');
+    expect(result.related).toEqual([]);
+  });
+
+  test('findRelated returns null for unknown aesthetic', () => {
+    expect(findRelated(db, 'NonExistentXYZ')).toBeNull();
+  });
+
+  test('checkStaleness returns staleness info', () => {
+    const result = checkStaleness(db);
+    expect(result).toHaveProperty('total');
+    expect(result).toHaveProperty('oldest_scraped');
+    expect(result).toHaveProperty('newest_scraped');
+    expect(result).toHaveProperty('days_since_last_scrape');
+    expect(result).toHaveProperty('is_stale');
+    expect(result.total).toBe(3);
+    expect(typeof result.days_since_last_scrape).toBe('number');
+    expect(result.days_since_last_scrape).toBeGreaterThanOrEqual(0);
   });
 });

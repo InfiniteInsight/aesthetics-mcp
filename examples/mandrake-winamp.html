@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MANDRAKE WINAMP SKIN</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; border: none; outline: none; }
+
+    body {
+      background: #111;
+      background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(212,175,55,0.03) 10px, rgba(212,175,55,0.03) 20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 0;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* ── Label ─────────────────────────────────────────────────── */
+    .skin-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.4em;
+      color: #5A4A10;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .skin-label span { color: #D4AF37; }
+
+    /* ── Winamp main wrapper ────────────────────────────────────── */
+    .winamp {
+      width: 280px;
+      background: #0A0A0A;
+      border: 1px solid #D4AF37;
+      box-shadow:
+        0 0 0 1px #3A2A00,
+        0 0 20px rgba(212,175,55,0.25),
+        0 0 60px rgba(212,175,55,0.08);
+      image-rendering: pixelated;
+      position: relative;
+      /* Diagonal stripe texture */
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 3px,
+        rgba(212,175,55,0.025) 3px,
+        rgba(212,175,55,0.025) 4px
+      );
+    }
+
+    /* ── Title bar ─────────────────────────────────────────────── */
+    .titlebar {
+      height: 14px;
+      background: linear-gradient(90deg, #CE1126 0%, #8A0010 40%, #2A0000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      cursor: default;
+      user-select: none;
+      border-bottom: 1px solid #D4AF37;
+    }
+    .titlebar-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: #FFD700;
+      text-shadow: 0 0 6px rgba(255,215,0,0.8);
+    }
+    .titlebar-tag {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 7px;
+      letter-spacing: 0.2em;
+      color: rgba(255,215,0,0.5);
+    }
+    .win-btns { display: flex; gap: 2px; }
+    .win-btn {
+      width: 9px; height: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5px;
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .win-btn-min  { background: #3A3A00; color: #D4AF37; border: 1px solid #6A6A00; }
+    .win-btn-max  { background: #2A1A00; color: #FFD700; border: 1px solid #6A4A00; }
+    .win-btn-close { background: #4A0000; color: #FF4040; border: 1px solid #8A0000; }
+
+    /* ── Display area ──────────────────────────────────────────── */
+    .display {
+      display: flex;
+      gap: 4px;
+      padding: 5px 5px 4px;
+      background: #0A0A0A;
+    }
+
+    /* Left display: status, time, info */
+    .display-left {
+      flex: 1;
+      background: #000;
+      border: 1px solid #2A1A00;
+      padding: 3px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+    }
+
+    /* Status lights */
+    .status-lights {
+      display: flex;
+      gap: 2px;
+    }
+    .led {
+      font-size: 5px;
+      padding: 1px 3px;
+      font-family: monospace;
+      color: #2A2A00;
+      background: #0D0D00;
+      border: 1px solid #1A1A00;
+      letter-spacing: 0;
+    }
+    .led.on { color: #FFD700; background: #1A1400; box-shadow: 0 0 4px rgba(255,215,0,0.6); }
+    .led-stop.on { color: #FF4040; background: #1A0000; box-shadow: 0 0 4px rgba(255,64,64,0.6); }
+
+    /* Time display */
+    .time-display {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 26px;
+      color: #FFD700;
+      line-height: 1;
+      letter-spacing: 0.05em;
+      text-shadow:
+        0 0 8px rgba(255,215,0,0.9),
+        0 0 20px rgba(255,215,0,0.4);
+      padding: 2px 0;
+    }
+    .time-display .colon {
+      animation: blink-colon 1s step-end infinite;
+    }
+    @keyframes blink-colon { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+    /* Bitrate / freq / stereo */
+    .bitrate-row {
+      display: flex;
+      gap: 0;
+      align-items: baseline;
+    }
+    .bitrate-num {
+      font-size: 9px;
+      color: #D4AF37;
+      letter-spacing: 0.05em;
+    }
+    .bitrate-unit {
+      font-size: 6px;
+      color: #6A5010;
+      margin-right: 5px;
+      letter-spacing: 0.1em;
+    }
+    .stereo-badge {
+      font-size: 6px;
+      color: #CE1126;
+      letter-spacing: 0.2em;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    /* Right display: VU meter */
+    .display-right {
+      width: 76px;
+      background: #000;
+      border: 1px solid #2A1A00;
+      padding: 3px 4px;
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+    }
+    .vu-channel {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 1px;
+      flex: 1;
+    }
+    .vu-cell {
+      height: 3px;
+      background: #0D0D00;
+      border-radius: 0;
+    }
+    .vu-cell.on-gold  { background: #D4AF37; box-shadow: 0 0 2px rgba(212,175,55,0.8); }
+    .vu-cell.on-red   { background: #CE1126; box-shadow: 0 0 3px rgba(206,17,38,0.9); }
+
+    /* ── Song title ────────────────────────────────────────────── */
+    .song-title-bar {
+      padding: 2px 5px;
+      background: #050500;
+      border-top: 1px solid #1A1200;
+      border-bottom: 1px solid #1A1200;
+      overflow: hidden;
+    }
+    .song-title-scroll {
+      font-size: 8px;
+      color: #FFD700;
+      white-space: nowrap;
+      animation: scroll-title 18s linear infinite;
+      display: inline-block;
+      text-shadow: 0 0 4px rgba(255,215,0,0.5);
+      letter-spacing: 0.05em;
+    }
+    @keyframes scroll-title {
+      0%   { transform: translateX(270px); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ── Sliders ───────────────────────────────────────────────── */
+    .sliders-row {
+      display: flex;
+      gap: 0;
+      padding: 5px 5px 4px;
+      background: #050500;
+      border-bottom: 1px solid #1A1200;
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .slider-group:first-child { flex: 2; margin-right: 6px; }
+    .slider-group:last-child  { flex: 1; }
+    .slider-lbl {
+      font-size: 6px;
+      color: #6A5010;
+      letter-spacing: 0.15em;
+      flex-shrink: 0;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+    }
+    .slider-track {
+      flex: 1;
+      height: 3px;
+      background: #1A1200;
+      border: 1px solid #2A2000;
+      position: relative;
+      cursor: pointer;
+    }
+    .slider-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8A6A00, #FFD700);
+    }
+    .slider-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 7px;
+      height: 7px;
+      background: linear-gradient(135deg, #FFD700 0%, #8A6A00 100%);
+      border: 1px solid #FFD700;
+      cursor: pointer;
+    }
+    /* Volume slider 75% */
+    .slider-group:first-child .slider-fill { width: 75%; }
+    .slider-group:first-child .slider-thumb { left: 75%; }
+    /* Balance centered */
+    .slider-group:last-child .slider-fill {
+      width: 50%;
+      background: linear-gradient(90deg, transparent, #D4AF37 50%, transparent);
+    }
+    .slider-group:last-child .slider-thumb { left: 50%; }
+
+    /* ── Transport controls ─────────────────────────────────────── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 5px 5px;
+      background: #080800;
+    }
+
+    .ctrl-btn {
+      width: 22px; height: 18px;
+      background: linear-gradient(160deg, #1A1400 0%, #0A0800 100%);
+      border: 1px solid #3A2A00;
+      color: #D4AF37;
+      font-size: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s;
+      font-family: monospace;
+    }
+    .ctrl-btn:hover {
+      background: linear-gradient(160deg, #3A2A00 0%, #1A1400 100%);
+      border-color: #D4AF37;
+      color: #FFD700;
+    }
+    .ctrl-btn:active {
+      background: #2A1A00;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .ctrl-play {
+      background: linear-gradient(160deg, #CE1126 0%, #6A0010 100%) !important;
+      border-color: #CE1126 !important;
+      color: #FFD700 !important;
+      width: 26px;
+      box-shadow: 0 0 6px rgba(206,17,38,0.4);
+    }
+    .ctrl-play:hover {
+      background: linear-gradient(160deg, #FF2040 0%, #8A0018 100%) !important;
+      box-shadow: 0 0 10px rgba(206,17,38,0.7) !important;
+    }
+    .ctrl-eject {
+      border-color: #D4AF37;
+      background: linear-gradient(160deg, #2A1A00 0%, #0A0800 100%);
+    }
+
+    .ctrl-spacer { flex: 1; }
+
+    .ctrl-toggle {
+      font-family: 'Oswald', sans-serif;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 0 4px;
+      height: 12px;
+      background: #0A0A00;
+      border: 1px solid #2A2000;
+      color: #4A4000;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .ctrl-toggle.on {
+      background: #1A1200;
+      border-color: #D4AF37;
+      color: #D4AF37;
+      box-shadow: 0 0 4px rgba(212,175,55,0.4);
+    }
+    .ctrl-toggle:hover { border-color: #8A6A00; color: #8A6A00; }
+
+    /* ── Equalizer window ──────────────────────────────────────── */
+    .winamp-eq {
+      width: 280px;
+      background: #0A0A0A;
+      border: 1px solid #D4AF37;
+      border-top: none;
+      box-shadow:
+        0 0 0 1px #3A2A00,
+        0 0 20px rgba(212,175,55,0.15),
+        0 0 60px rgba(212,175,55,0.05);
+      background-image: repeating-linear-gradient(
+        -45deg, transparent, transparent 3px,
+        rgba(212,175,55,0.025) 3px, rgba(212,175,55,0.025) 4px
+      );
+    }
+
+    .eq-titlebar {
+      height: 14px;
+      background: linear-gradient(90deg, #1A1A00 0%, #2A2000 50%, #CE1126 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      border-bottom: 1px solid #3A2A00;
+    }
+    .eq-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      color: #D4AF37;
+    }
+
+    .eq-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 5px 2px;
+      border-bottom: 1px solid #1A1200;
+    }
+    .eq-btn {
+      font-family: 'Oswald', sans-serif;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      padding: 1px 5px;
+      background: #1A1200;
+      border: 1px solid #3A2A00;
+      color: #D4AF37;
+      cursor: pointer;
+    }
+    .eq-btn.active {
+      background: #CE1126;
+      border-color: #FF2040;
+      color: #FFD700;
+      box-shadow: 0 0 4px rgba(206,17,38,0.6);
+    }
+    .eq-preset {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 6px;
+      color: #6A5010;
+      margin-left: 4px;
+      flex: 1;
+    }
+
+    .eq-bands {
+      display: flex;
+      padding: 4px 5px;
+      gap: 0;
+      align-items: flex-end;
+      height: 62px;
+      background: #040400;
+    }
+    .eq-band {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .eq-slider-track {
+      width: 3px;
+      flex: 1;
+      background: #0D0D00;
+      border: 1px solid #1A1200;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .eq-notch {
+      width: 7px;
+      height: 3px;
+      background: linear-gradient(90deg, #8A6A00, #FFD700);
+      border: 1px solid #FFD700;
+      position: absolute;
+      box-shadow: 0 0 3px rgba(255,215,0,0.6);
+    }
+    .eq-freq {
+      font-size: 5px;
+      color: #4A3800;
+      letter-spacing: 0;
+      white-space: nowrap;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .eq-divider {
+      width: 1px;
+      height: 100%;
+      background: #1A1200;
+      align-self: stretch;
+    }
+
+    /* ── Playlist window ────────────────────────────────────────── */
+    .winamp-pl {
+      width: 280px;
+      background: #0A0A0A;
+      border: 1px solid #D4AF37;
+      border-top: none;
+      box-shadow:
+        0 0 0 1px #3A2A00,
+        0 0 20px rgba(212,175,55,0.1);
+    }
+    .pl-titlebar {
+      height: 14px;
+      background: linear-gradient(90deg, #2A0000 0%, #CE1126 50%, #8A0010 100%);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4px;
+      border-bottom: 1px solid #D4AF37;
+    }
+    .pl-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8px; letter-spacing: 0.3em;
+      color: #FFD700; text-shadow: 0 0 4px rgba(255,215,0,0.8);
+    }
+    .pl-body { padding: 3px 0; background: #040400; }
+    .pl-track {
+      display: flex; align-items: center; gap: 5px;
+      padding: 1px 6px;
+      font-size: 7px;
+      font-family: 'Share Tech Mono', monospace;
+      color: #4A3A10;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+    }
+    .pl-track:hover { color: #8A6A20; background: #0D0D00; }
+    .pl-track.active {
+      color: #FFD700;
+      background: #0D0900;
+      border-left-color: #CE1126;
+      text-shadow: 0 0 4px rgba(255,215,0,0.4);
+    }
+    .pl-num { width: 14px; color: #3A2A08; flex-shrink: 0; text-align: right; }
+    .pl-track.active .pl-num { color: #CE1126; }
+    .pl-duration { margin-left: auto; color: #3A2A08; flex-shrink: 0; }
+    .pl-track.active .pl-duration { color: #8A6A20; }
+
+    .pl-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 3px 5px;
+      border-top: 1px solid #1A1200;
+      background: #060600;
+    }
+    .pl-footer-btn {
+      font-family: 'Oswald', sans-serif;
+      font-size: 5.5px; font-weight: 700; letter-spacing: 0.1em;
+      padding: 1px 4px;
+      background: #0D0D00; border: 1px solid #2A2000;
+      color: #6A5010; cursor: pointer;
+    }
+    .pl-footer-btn:hover { border-color: #D4AF37; color: #D4AF37; }
+    .pl-time {
+      font-size: 6.5px; color: #4A3810;
+      font-family: 'Share Tech Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="skin-label">MANDRAKE SKIN v1.0 &nbsp;·&nbsp; <span>A FAVELA VENCEU</span> &nbsp;·&nbsp; FUNK OSTENTAÇÃO EDITION</div>
+
+  <!-- ── MAIN WINDOW ───────────────────────────────────────────── -->
+  <div class="winamp">
+
+    <!-- Title bar -->
+    <div class="titlebar">
+      <span class="titlebar-logo">WINAMP</span>
+      <span class="titlebar-tag">MANDRAKE SKIN</span>
+      <div class="win-btns">
+        <button class="win-btn win-btn-min">_</button>
+        <button class="win-btn win-btn-max">□</button>
+        <button class="win-btn win-btn-close">×</button>
+      </div>
+    </div>
+
+    <!-- Display -->
+    <div class="display">
+
+      <!-- Left: time + info -->
+      <div class="display-left">
+        <div class="status-lights">
+          <span class="led on">▶ PLAY</span>
+          <span class="led">❙❙ PAUSE</span>
+          <span class="led led-stop">■ STOP</span>
+        </div>
+        <div class="time-display">
+          2<span class="colon">:</span>14
+        </div>
+        <div class="bitrate-row">
+          <span class="bitrate-num">320</span>
+          <span class="bitrate-unit">KBPS</span>
+          <span class="bitrate-num">44</span>
+          <span class="bitrate-unit">KHZ</span>
+          <span class="stereo-badge">STEREO</span>
+        </div>
+      </div>
+
+      <!-- Right: VU meter (L + R channels, 14 cells each) -->
+      <div class="display-right">
+        <!-- Left channel -->
+        <div class="vu-channel">
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-red"></div>
+          <div class="vu-cell on-red"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+        </div>
+        <!-- gap -->
+        <div style="width:4px;"></div>
+        <!-- Right channel -->
+        <div class="vu-channel">
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-gold"></div>
+          <div class="vu-cell on-red"></div>
+          <div class="vu-cell on-red"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+          <div class="vu-cell"></div>
+        </div>
+      </div>
+
+    </div><!-- /display -->
+
+    <!-- Song title -->
+    <div class="song-title-bar">
+      <span class="song-title-scroll">
+        ★ MC Maneirinho - Quer Voar de Hornet? (Funk Ostentação) ★ &nbsp;&nbsp;&nbsp;&nbsp;
+        [3/8] &nbsp; DEADZONE BAILE FUNK MIX VOL.3 &nbsp;&nbsp;&nbsp;&nbsp;
+      </span>
+    </div>
+
+    <!-- Sliders -->
+    <div class="sliders-row">
+      <div class="slider-group">
+        <span class="slider-lbl">VOL</span>
+        <div class="slider-track">
+          <div class="slider-fill"></div>
+          <div class="slider-thumb"></div>
+        </div>
+      </div>
+      <div class="slider-group">
+        <span class="slider-lbl">BAL</span>
+        <div class="slider-track">
+          <div class="slider-fill"></div>
+          <div class="slider-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transport -->
+    <div class="controls">
+      <button class="ctrl-btn" title="Prev">⏮</button>
+      <button class="ctrl-btn ctrl-play" title="Play">▶</button>
+      <button class="ctrl-btn" title="Pause">⏸</button>
+      <button class="ctrl-btn" title="Stop">⏹</button>
+      <button class="ctrl-btn" title="Next">⏭</button>
+      <button class="ctrl-btn ctrl-eject" title="Eject">⏏</button>
+      <div class="ctrl-spacer"></div>
+      <button class="ctrl-toggle on" title="Shuffle">SHF</button>
+      <button class="ctrl-toggle" title="Repeat">REP</button>
+      <button class="ctrl-toggle on" title="EQ">EQ</button>
+      <button class="ctrl-toggle on" title="Playlist">PL</button>
+    </div>
+
+  </div><!-- /winamp -->
+
+  <!-- ── EQUALIZER WINDOW ─────────────────────────────────────── -->
+  <div class="winamp-eq">
+    <div class="eq-titlebar">
+      <span class="eq-title">EQUALIZER</span>
+      <div class="win-btns">
+        <button class="win-btn win-btn-min">_</button>
+        <button class="win-btn win-btn-close">×</button>
+      </div>
+    </div>
+    <div class="eq-controls">
+      <button class="eq-btn active">ON</button>
+      <button class="eq-btn">AUTO</button>
+      <span class="eq-preset">BAILE FUNK HEAVY ▾</span>
+      <button class="eq-btn">RESET</button>
+    </div>
+    <div class="eq-bands">
+      <!-- PREAMP -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 30%"></div>
+        </div>
+        <div class="eq-freq">PRE</div>
+      </div>
+      <div class="eq-divider" style="margin: 0 2px;"></div>
+      <!-- 10 bands -->
+      <!-- 60Hz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 15%"></div>
+        </div>
+        <div class="eq-freq">60</div>
+      </div>
+      <!-- 170Hz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 20%"></div>
+        </div>
+        <div class="eq-freq">170</div>
+      </div>
+      <!-- 310Hz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 30%"></div>
+        </div>
+        <div class="eq-freq">310</div>
+      </div>
+      <!-- 600Hz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 45%"></div>
+        </div>
+        <div class="eq-freq">600</div>
+      </div>
+      <!-- 1kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 38%"></div>
+        </div>
+        <div class="eq-freq">1K</div>
+      </div>
+      <!-- 3kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 42%"></div>
+        </div>
+        <div class="eq-freq">3K</div>
+      </div>
+      <!-- 6kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 35%"></div>
+        </div>
+        <div class="eq-freq">6K</div>
+      </div>
+      <!-- 12kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 40%"></div>
+        </div>
+        <div class="eq-freq">12K</div>
+      </div>
+      <!-- 14kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 48%"></div>
+        </div>
+        <div class="eq-freq">14K</div>
+      </div>
+      <!-- 16kHz -->
+      <div class="eq-band">
+        <div class="eq-slider-track">
+          <div class="eq-notch" style="top: 55%"></div>
+        </div>
+        <div class="eq-freq">16K</div>
+      </div>
+    </div>
+  </div><!-- /eq -->
+
+  <!-- ── PLAYLIST WINDOW ─────────────────────────────────────── -->
+  <div class="winamp-pl">
+    <div class="pl-titlebar">
+      <span class="pl-title">PLAYLIST EDITOR</span>
+      <div class="win-btns">
+        <button class="win-btn win-btn-min">_</button>
+        <button class="win-btn win-btn-close">×</button>
+      </div>
+    </div>
+    <div class="pl-body">
+      <div class="pl-track"><span class="pl-num">1.</span> MC Kevin O Chris - Vai Embrazando<span class="pl-duration">3:22</span></div>
+      <div class="pl-track"><span class="pl-num">2.</span> Funk do Capo - Ostentação Total<span class="pl-duration">2:58</span></div>
+      <div class="pl-track active"><span class="pl-num">3.</span> MC Maneirinho - Quer Voar de Hornet?<span class="pl-duration">3:47</span></div>
+      <div class="pl-track"><span class="pl-num">4.</span> MC Dede - Flamengo É Paixão<span class="pl-duration">2:44</span></div>
+      <div class="pl-track"><span class="pl-num">5.</span> Mc Nego Blue - Gold Chain (feat. Baile Mix)<span class="pl-duration">4:01</span></div>
+      <div class="pl-track"><span class="pl-num">6.</span> DJ Menor - Corrente de Ouro Remix<span class="pl-duration">3:15</span></div>
+      <div class="pl-track"><span class="pl-num">7.</span> MC Livinho - Cheirosa da Favela<span class="pl-duration">2:53</span></div>
+      <div class="pl-track"><span class="pl-num">8.</span> Funk Ostentação Megamix Vol.3 [FULL]<span class="pl-duration">18:44</span></div>
+    </div>
+    <div class="pl-footer">
+      <button class="pl-footer-btn">+ ADD</button>
+      <button class="pl-footer-btn">- REM</button>
+      <button class="pl-footer-btn">SEL ALL</button>
+      <button class="pl-footer-btn">SORT ▾</button>
+      <span class="pl-time">8 TRACKS · 41:44</span>
+    </div>
+  </div><!-- /playlist -->
+
+</body>
+</html>

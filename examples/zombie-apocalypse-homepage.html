@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEADZONE — Survivor Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design tokens ─────────────────────────────────────────── */
+    :root {
+      --void:       #0D0D08;
+      --ash:        #181810;
+      --bunker:     #242418;
+      --trench:     #303028;
+      --dirt:       #484838;
+      --dust:       #787860;
+      --bone:       #C0B898;
+      --parchment:  #E0D4B0;
+      --blood:      #CC1A1A;
+      --blood-dk:   #8A1010;
+      --blood-lt:   #E82020;
+      --rust:       #A84A10;
+      --bile:       #7A7820;
+      --moss:       #3A5828;
+      --sick-teal:  #285850;
+      --bruise:     #4A3858;
+      --warning:    #C87A10;
+
+      --font-display: 'Bebas Neue', 'Impact', sans-serif;
+      --font-head:    'Oswald', sans-serif;
+      --font-mono:    'Share Tech Mono', 'Courier New', monospace;
+
+      --border:     1px solid var(--dirt);
+      --shadow-red: 0 0 20px rgba(204, 26, 26, 0.15);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--void);
+      color: var(--bone);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      /* Subtle scanline texture */
+      background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    .container--narrow { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── Emergency ticker ──────────────────────────────────────── */
+    .ticker {
+      background: var(--blood);
+      color: #fff;
+      padding: 0.45rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+    .ticker__inner {
+      display: inline-block;
+      animation: ticker 35s linear infinite;
+    }
+    @keyframes ticker {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ── Navigation ────────────────────────────────────────────── */
+    .nav {
+      background: var(--ash);
+      border-bottom: 2px solid var(--blood);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .nav__logo {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--blood);
+      letter-spacing: 0.1em;
+      line-height: 1;
+    }
+    .nav__logo span { color: var(--parchment); }
+    .nav__status {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--bile);
+      letter-spacing: 0.15em;
+      animation: blink 2.5s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .nav__links {
+      display: flex;
+      list-style: none;
+      gap: 1.75rem;
+    }
+    .nav__links a {
+      font-family: var(--font-head);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dust);
+      transition: color 0.15s;
+    }
+    .nav__links a:hover { color: var(--blood); }
+
+    /* ── Hero ──────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 88vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 70% 50%, rgba(168,74,16,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(42,88,80,0.10) 0%, transparent 50%),
+        var(--void);
+    }
+    /* Grid overlay */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(72,72,56,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(72,72,56,0.15) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    /* Red vignette */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(204,26,26,0.08) 100%);
+      pointer-events: none;
+    }
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 0;
+    }
+    .hero__day {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--blood);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .hero__day::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blood);
+      animation: blink 1.5s step-end infinite;
+    }
+    .hero__title {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 12vw, 10rem);
+      line-height: 0.9;
+      color: var(--parchment);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .hero__title .accent { color: var(--blood); }
+    .hero__title .faded {
+      color: var(--dirt);
+      display: block;
+      font-size: 0.4em;
+      letter-spacing: 0.25em;
+    }
+    .hero__sub {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--dust);
+      max-width: 520px;
+      margin: 1.5rem 0 2.5rem;
+      line-height: 1.8;
+      border-left: 2px solid var(--blood-dk);
+      padding-left: 1rem;
+    }
+    .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-block;
+      font-family: var(--font-head);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.75rem 2rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn--danger {
+      background: var(--blood);
+      color: #fff;
+      border: 2px solid var(--blood);
+      box-shadow: var(--shadow-red);
+    }
+    .btn--danger:hover {
+      background: var(--blood-lt);
+      box-shadow: 0 0 30px rgba(204,26,26,0.4);
+    }
+    .btn--ghost {
+      background: transparent;
+      color: var(--bone);
+      border: 2px solid var(--dirt);
+    }
+    .btn--ghost:hover { border-color: var(--bone); }
+
+    .hero__stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: var(--border);
+      flex-wrap: wrap;
+    }
+    .stat__value {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--blood);
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+    .stat__label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--dust);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    /* ── Alert band ────────────────────────────────────────────── */
+    .alert-band {
+      background: var(--bunker);
+      border-top: 1px solid var(--warning);
+      border-bottom: 1px solid var(--warning);
+      padding: 1rem 0;
+    }
+    .alert-band__inner {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .alert-tag {
+      background: var(--warning);
+      color: var(--void);
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      flex-shrink: 0;
+    }
+    .alert-band p {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--bone);
+    }
+
+    /* ── Section base ──────────────────────────────────────────── */
+    .section { padding: 5rem 0; }
+    .section--dark { background: var(--ash); }
+    .section--bunker {
+      background: var(--bunker);
+      border-top: var(--border);
+      border-bottom: var(--border);
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--blood);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-eyebrow::before { content: '//'; color: var(--dirt); }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      color: var(--parchment);
+      letter-spacing: 0.08em;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+    .section-intro {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--dust);
+      max-width: 500px;
+      margin-bottom: 3rem;
+      line-height: 1.8;
+    }
+
+    /* ── Survival guide cards ──────────────────────────────────── */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1px;
+      border: 1px solid var(--dirt);
+      background: var(--dirt);
+    }
+    .guide-card {
+      background: var(--ash);
+      padding: 2rem;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .guide-card:hover { background: var(--bunker); }
+    .guide-card::before {
+      content: attr(data-num);
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      color: var(--trench);
+      line-height: 1;
+      pointer-events: none;
+    }
+    .guide-card__icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .guide-card__tag {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blood);
+      margin-bottom: 0.5rem;
+    }
+    .guide-card__title {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 0.6rem;
+      line-height: 1.3;
+    }
+    .guide-card__text {
+      font-size: 0.8rem;
+      color: var(--dust);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+    .link-arrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--blood);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: gap 0.15s;
+    }
+    .link-arrow:hover { gap: 0.75rem; }
+
+    /* ── Threat panel ──────────────────────────────────────────── */
+    .threat-panel {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .threat-panel { grid-template-columns: 1fr; } }
+
+    .threat-map {
+      background: var(--void);
+      border: 1px solid var(--dirt);
+      aspect-ratio: 4/3;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    /* Grid lines on the map */
+    .threat-map::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(72,72,56,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(72,72,56,0.3) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .threat-map__label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--blood);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .threat-map__icon {
+      font-size: 4rem;
+      position: relative;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.95)} }
+    .threat-map__coords {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--dirt);
+    }
+
+    /* Threat levels */
+    .threat-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .threat-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      background: var(--ash);
+      border-left: 3px solid var(--dirt);
+      transition: border-color 0.2s;
+    }
+    .threat-item:hover { border-left-color: var(--blood); }
+    .threat-item--red   { border-left-color: var(--blood); }
+    .threat-item--amber { border-left-color: var(--warning); }
+    .threat-item--green { border-left-color: var(--moss); }
+    .threat-item--teal  { border-left-color: var(--sick-teal); }
+
+    .threat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .threat-dot--red   { background: var(--blood); box-shadow: 0 0 6px rgba(204,26,26,0.6); }
+    .threat-dot--amber { background: var(--warning); }
+    .threat-dot--green { background: var(--moss); }
+    .threat-dot--teal  { background: var(--sick-teal); }
+
+    .threat-zone { font-family: var(--font-head); font-size: 0.9rem; font-weight: 600; color: var(--bone); flex: 1; }
+    .threat-level { font-family: var(--font-mono); font-size: 0.65rem; color: var(--dust); letter-spacing: 0.1em; }
+
+    /* ── Radio dispatches ──────────────────────────────────────── */
+    .dispatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .dispatch {
+      border: var(--border);
+      padding: 1.5rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .dispatch:hover { border-color: var(--blood-dk); }
+    .dispatch__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: var(--border);
+    }
+    .dispatch__freq {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--bile);
+      letter-spacing: 0.15em;
+    }
+    .dispatch__timestamp {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--dust);
+    }
+    .dispatch__title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .dispatch__text {
+      font-size: 0.78rem;
+      color: var(--dust);
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+    .dispatch__source {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--dirt);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Checklist ─────────────────────────────────────────────── */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    @media (max-width: 600px) { .checklist-grid { grid-template-columns: 1fr; } }
+
+    .checklist-block h3 {
+      font-family: var(--font-head);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--trench);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--dust);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(72,72,56,0.4);
+    }
+    .checklist li::before {
+      content: '□';
+      color: var(--dirt);
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+    .checklist li.checked { color: var(--moss); }
+    .checklist li.checked::before { content: '✓'; color: var(--moss); }
+
+    /* ── CTA banner ────────────────────────────────────────────── */
+    .cta-banner {
+      background: var(--blood-dk);
+      border-top: 2px solid var(--blood);
+      border-bottom: 2px solid var(--blood);
+      padding: 3.5rem 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-banner::before {
+      content: 'DEADZONE';
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: 15rem;
+      color: rgba(0,0,0,0.15);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      letter-spacing: 0.2em;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .cta-banner h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      color: #fff;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .cta-banner p {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .cta-banner .btn { position: relative; }
+
+    /* ── Footer ────────────────────────────────────────────────── */
+    footer {
+      background: var(--ash);
+      border-top: 2px solid var(--blood-dk);
+      padding: 3rem 0 2rem;
+    }
+    .footer__inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+    }
+    @media (max-width: 600px) { .footer__inner { grid-template-columns: 1fr; } }
+
+    .footer__brand-logo {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--blood);
+      letter-spacing: 0.1em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .footer__brand-logo span { color: var(--dust); }
+    .footer__tagline {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--dust);
+      margin-bottom: 1rem;
+    }
+    .footer__signal {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--moss);
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .footer__signal::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--moss);
+      animation: blink 2s step-end infinite;
+    }
+    .footer__col h4 {
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bone);
+      margin-bottom: 1rem;
+    }
+    .footer__col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer__col ul a {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--dust);
+      transition: color 0.15s;
+    }
+    .footer__col ul a:hover { color: var(--blood); }
+
+    .footer__bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.5rem;
+      border-top: var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer__copy {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--dirt);
+      letter-spacing: 0.08em;
+    }
+    .footer__freq {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--bile);
+      letter-spacing: 0.15em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Emergency ticker -->
+  <div class="ticker">
+    <span class="ticker__inner">
+      ☣ &nbsp; EMERGENCY BROADCAST ACTIVE &nbsp; · &nbsp; ZONES 3, 7, 12 QUARANTINED — DO NOT ENTER &nbsp; · &nbsp; WATER STATIONS AT GRID REF B4 AND D9 OPERATIONAL &nbsp; · &nbsp; AVOID DOWNTOWN CORRIDOR AFTER DARK &nbsp; · &nbsp; SURVIVORS REPORT TO CHECKPOINT FOXTROT &nbsp; · &nbsp; REPEAT: ZONES 3, 7, 12 QUARANTINED &nbsp; · &nbsp; ☣
+    </span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container">
+      <div class="nav__inner">
+        <div>
+          <div class="nav__logo">DEAD<span>ZONE</span></div>
+          <div class="nav__status">● SIGNAL ACTIVE — DAY 847</div>
+        </div>
+        <ul class="nav__links">
+          <li><a href="#">Survival</a></li>
+          <li><a href="#">Threat Map</a></li>
+          <li><a href="#">Dispatches</a></li>
+          <li><a href="#">Supplies</a></li>
+          <li><a href="#">Community</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero__content">
+      <div class="hero__day">DEADZONE SURVIVOR NETWORK — UPLINK 847</div>
+      <h1 class="hero__title">
+        <span class="faded">Still</span>
+        <span class="accent">Alive.</span>
+        <br>Still
+        <span class="accent">Fighting.</span>
+      </h1>
+      <p class="hero__sub">
+        The grid collapsed. The cities emptied. But the signal holds.
+        DEADZONE is the surviving network for those who made it this far —
+        survival guides, threat intelligence, community dispatches, and the
+        knowledge that keeps you breathing one more day.
+      </p>
+      <div class="hero__actions">
+        <a href="#" class="btn btn--danger">Access Survival Guides</a>
+        <a href="#" class="btn btn--ghost">Check Threat Map</a>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <div class="stat__value">847</div>
+          <div class="stat__label">Days since outbreak</div>
+        </div>
+        <div>
+          <div class="stat__value">3,241</div>
+          <div class="stat__label">Confirmed survivors</div>
+        </div>
+        <div>
+          <div class="stat__value">14</div>
+          <div class="stat__label">Active safe zones</div>
+        </div>
+        <div>
+          <div class="stat__value">☣ 3</div>
+          <div class="stat__label">Quarantine zones</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alert band -->
+  <div class="alert-band">
+    <div class="container">
+      <div class="alert-band__inner">
+        <span class="alert-tag">⚠ Priority Alert</span>
+        <p>Horde movement detected northeast of Sector 7. Estimated 200+ hostiles tracking toward the river crossing. Avoid Route 9 until further notice. Safe passage confirmed via Route 14-B.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survival Guides -->
+  <section class="section">
+    <div class="container">
+      <div class="section-eyebrow">Field Manuals</div>
+      <h2 class="section-title">SURVIVAL GUIDES</h2>
+      <p class="section-intro">Tested protocols from survivors in the field. Read these before you need them.</p>
+
+      <div class="guide-grid">
+        <article class="guide-card" data-num="01">
+          <div class="guide-card__icon">🔫</div>
+          <div class="guide-card__tag">Combat</div>
+          <h3 class="guide-card__title">Weapon Maintenance Under Field Conditions</h3>
+          <p class="guide-card__text">When ammunition is scarce and parts are unavailable, your firearm must last. Cleaning protocols, improvised lubricants, and when to switch to melee.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+
+        <article class="guide-card" data-num="02">
+          <div class="guide-card__icon">🧠</div>
+          <div class="guide-card__tag">Threat Intelligence</div>
+          <h3 class="guide-card__title">Horde Behavior: Patterns, Triggers, Dispersal</h3>
+          <p class="guide-card__text">Hordes are not random. They track sound, light, and warmth. Understanding movement patterns is the difference between an encounter and an ambush.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+
+        <article class="guide-card" data-num="03">
+          <div class="guide-card__icon">🏚️</div>
+          <div class="guide-card__tag">Shelter</div>
+          <h3 class="guide-card__title">Fortifying Urban Structures for Long-Term Hold</h3>
+          <p class="guide-card__text">Which buildings are worth holding. How to block access points without trapping yourself. The signs that a site must be abandoned.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+
+        <article class="guide-card" data-num="04">
+          <div class="guide-card__icon">🌿</div>
+          <div class="guide-card__tag">Foraging</div>
+          <h3 class="guide-card__title">Identifying Safe Food Sources in Derelict Cities</h3>
+          <p class="guide-card__text">Canned goods degrade. Gardens go feral. Knowing what's safe to eat in abandoned urban environments keeps hunger from becoming the real killer.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+
+        <article class="guide-card" data-num="05">
+          <div class="guide-card__icon">📡</div>
+          <div class="guide-card__tag">Communication</div>
+          <h3 class="guide-card__title">Maintaining Radio Contact Across Dead Zones</h3>
+          <p class="guide-card__text">Signal is life. How to build a directional antenna from salvage, which frequencies are still monitored, and how to authenticate friendly contact.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+
+        <article class="guide-card" data-num="06">
+          <div class="guide-card__icon">🩹</div>
+          <div class="guide-card__tag">Medicine</div>
+          <h3 class="guide-card__title">Field Medicine Without a Clinic</h3>
+          <p class="guide-card__text">Infection is the primary cause of survivor death — not the undead. Wound management, improvised antibiotics, and when a wound is no longer treatable.</p>
+          <a href="#" class="link-arrow">Read protocol →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Threat Map -->
+  <section class="section section--bunker">
+    <div class="container">
+      <div class="threat-panel">
+        <div>
+          <div class="section-eyebrow">Live Intelligence</div>
+          <h2 class="section-title">THREAT STATUS</h2>
+          <p class="section-intro">Updated every 6 hours via survivor relay. Verify before moving.</p>
+          <ul class="threat-list">
+            <li class="threat-item threat-item--red">
+              <span class="threat-dot threat-dot--red"></span>
+              <span class="threat-zone">Downtown Corridor / Zone 7</span>
+              <span class="threat-level">CRITICAL — EVACUATE</span>
+            </li>
+            <li class="threat-item threat-item--red">
+              <span class="threat-dot threat-dot--red"></span>
+              <span class="threat-zone">Government District / Zone 3</span>
+              <span class="threat-level">CRITICAL — QUARANTINE</span>
+            </li>
+            <li class="threat-item threat-item--amber">
+              <span class="threat-dot threat-dot--amber"></span>
+              <span class="threat-zone">Industrial Port / Zone 12</span>
+              <span class="threat-level">HIGH — ARMED ESCORT ONLY</span>
+            </li>
+            <li class="threat-item threat-item--amber">
+              <span class="threat-dot threat-dot--amber"></span>
+              <span class="threat-zone">River Crossing / Route 9</span>
+              <span class="threat-level">HIGH — HORDE MOVEMENT</span>
+            </li>
+            <li class="threat-item threat-item--teal">
+              <span class="threat-dot threat-dot--teal"></span>
+              <span class="threat-zone">Northern Forest / Zone 2</span>
+              <span class="threat-level">MODERATE — PATROL ACTIVE</span>
+            </li>
+            <li class="threat-item threat-item--green">
+              <span class="threat-dot threat-dot--green"></span>
+              <span class="threat-zone">Checkpoint Foxtrot / Zone 1</span>
+              <span class="threat-level">CLEAR — SAFE ZONE ACTIVE</span>
+            </li>
+          </ul>
+        </div>
+        <div class="threat-map">
+          <div class="threat-map__label">☣ SECTOR MAP — CLASSIFIED</div>
+          <div class="threat-map__icon">🗺️</div>
+          <div class="threat-map__label">UPLINK ACTIVE</div>
+          <div class="threat-map__coords">LAT 40.7128° N · LNG 74.0060° W</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Radio Dispatches -->
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section-eyebrow">Survivor Network</div>
+      <h2 class="section-title">INCOMING DISPATCHES</h2>
+      <p class="section-intro">Field reports from the network. Unverified. Read critically.</p>
+
+      <div class="dispatch-grid">
+        <div class="dispatch">
+          <div class="dispatch__header">
+            <span class="dispatch__freq">FREQ 142.7 MHz</span>
+            <span class="dispatch__timestamp">DAY 847 · 04:32 UTC</span>
+          </div>
+          <h3 class="dispatch__title">Safe passage confirmed via the old rail tunnel, northern approach</h3>
+          <p class="dispatch__text">Moved a group of eleven through last night. No contact. Tunnel clear to the junction — after that, stay right and surface before the old freight yard. Recommend night movement only.</p>
+          <div class="dispatch__source">— CALLSIGN: IRONWOOD · SECTOR 2</div>
+        </div>
+
+        <div class="dispatch">
+          <div class="dispatch__header">
+            <span class="dispatch__freq">FREQ 98.3 MHz</span>
+            <span class="dispatch__timestamp">DAY 846 · 19:14 UTC</span>
+          </div>
+          <h3 class="dispatch__title">Medical supplies located in hospital basement, Grid C7 — access still possible</h3>
+          <p class="dispatch__text">Lower level is clear. Three floors of infected above. Ground-floor entrance is compromised but the loading dock on the east face is passable. Antibiotics and surgical supplies confirmed.</p>
+          <div class="dispatch__source">— CALLSIGN: GREY SPARROW · SECTOR 5</div>
+        </div>
+
+        <div class="dispatch">
+          <div class="dispatch__header">
+            <span class="dispatch__freq">FREQ 107.1 MHz</span>
+            <span class="dispatch__timestamp">DAY 845 · 11:58 UTC</span>
+          </div>
+          <h3 class="dispatch__title">Warning: do not trust the checkpoint at the eastern bridge — it is not ours</h3>
+          <p class="dispatch__text">Lost two people at an unmarked checkpoint on Route 9-East. Uniforms looked official. They weren't. Stay on verified routes. If it isn't on the DEADZONE map, do not stop.</p>
+          <div class="dispatch__source">— CALLSIGN: RED DUSK · SECTOR 9</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supplies Checklist -->
+  <section class="section section--bunker">
+    <div class="container">
+      <div class="section-eyebrow">Loadout Protocol</div>
+      <h2 class="section-title">SUPPLY CHECKLIST</h2>
+      <p class="section-intro">The minimum viable loadout before leaving any safe zone. No exceptions.</p>
+
+      <div class="checklist-grid">
+        <div class="checklist-block">
+          <h3>🎒 Essential Carry</h3>
+          <ul class="checklist">
+            <li class="checked">Water — minimum 3L per person</li>
+            <li class="checked">High-calorie rations — 3 days</li>
+            <li class="checked">First-aid kit with antibiotics</li>
+            <li class="checked">Radio — charged, correct freq</li>
+            <li>Backup batteries or solar charger</li>
+            <li>Terrain map — paper, not digital</li>
+            <li>Emergency flare or signal mirror</li>
+          </ul>
+        </div>
+        <div class="checklist-block">
+          <h3>⚔️ Defense & Tools</h3>
+          <ul class="checklist">
+            <li class="checked">Primary weapon — inspected, loaded</li>
+            <li class="checked">Blade — secondary melee</li>
+            <li class="checked">Rope — 15m minimum</li>
+            <li>Multi-tool or folding saw</li>
+            <li>Fire starter — two methods</li>
+            <li>Headlamp — red-light mode available</li>
+            <li>Thermal layer — even in summer</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <div class="container">
+      <h2>JOIN THE NETWORK. STAY ALIVE.</h2>
+      <p>Register your callsign. Share intelligence. Keep the signal alive.</p>
+      <a href="#" class="btn btn--danger">Register Survivor</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer__inner">
+        <div>
+          <div class="footer__brand-logo">DEAD<span>ZONE</span></div>
+          <p class="footer__tagline">Survivor Network · Est. Day 1</p>
+          <p class="footer__signal">SIGNAL ACTIVE — 142.7 MHz</p>
+        </div>
+        <div class="footer__col">
+          <h4>Protocols</h4>
+          <ul>
+            <li><a href="#">Survival Guides</a></li>
+            <li><a href="#">Threat Intelligence</a></li>
+            <li><a href="#">Medical Field Manual</a></li>
+            <li><a href="#">Foraging Index</a></li>
+            <li><a href="#">Safe Zone Directory</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Network</h4>
+          <ul>
+            <li><a href="#">Submit Dispatch</a></li>
+            <li><a href="#">Register Callsign</a></li>
+            <li><a href="#">Community Board</a></li>
+            <li><a href="#">Frequency Schedule</a></li>
+            <li><a href="#">About DEADZONE</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copy">© DAY 847 · DEADZONE SURVIVOR NETWORK · ALL DATA SHARED WITHOUT GUARANTEE OF ACCURACY</p>
+        <p class="footer__freq">☣ UPLINK: 142.7 MHz · BACKUP: 98.3 MHz</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

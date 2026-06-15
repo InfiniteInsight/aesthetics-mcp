@@ -21,8 +21,13 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "files": ["src/", "data/aesthetics.db", "skills/"],
+  "files": [
+    "src/",
+    "data/aesthetics.db",
+    "skills/"
+  ],
   "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "better-sqlite3": "^9.0.0",
     "cheerio": "^1.0.0",
